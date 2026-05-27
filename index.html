@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Debris Analyzer & Classifier</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER -->
+    <header>
+      <div class="logo-container">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <h1>Space Debris Analyzer</h1>
+      </div>
+      <p>Interactive Orbital Telemetry Classification Engine (Random Forest & Decision Trees)</p>
+    </header>
+
+    <!-- MAIN GRID -->
+    <div class="dashboard-grid">
+      
+      <!-- LEFT: CONTROLS & FORM -->
+      <section class="card">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+            <rect x="9" y="9" width="6" height="6"/>
+          </svg>
+          Orbital Telemetry Inputs
+        </h2>
+
+        <!-- Presets Selection -->
+        <div class="presets-container">
+          <button class="btn-preset active" onclick="loadPreset('active_starlink')">Starlink Sat</button>
+          <button class="btn-preset" onclick="loadPreset('active_geo')">Geostationary Sat</button>
+          <button class="btn-preset" onclick="loadPreset('cosmos_debris')">Cosmos 2251 Debris</button>
+          <button class="btn-preset" onclick="loadPreset('fengyun_debris')">FengYun 1C Debris</button>
+        </div>
+
+        <!-- Telemetry Form -->
+        <div class="form-grid">
+          
+          <div class="input-group">
+            <label for="input-eccentricity">Eccentricity <span class="unit">(e)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-eccentricity" step="0.0001" min="0" max="0.99" value="0.0005">
+            </div>
+            <div class="slider-container">
+              <input type="range" id="slide-eccentricity" step="0.0001" min="0" max="0.1" value="0.0005">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-inclination">Inclination <span class="unit">(i, degrees)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-inclination" step="0.01" min="0" max="180" value="53.0">
+            </div>
+            <div class="slider-container">
+              <input type="range" id="slide-inclination" step="0.1" min="0" max="180" value="53.0">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-altitude">Altitude <span class="unit">(km)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-altitude" step="10" min="100" max="40000" value="550">
+            </div>
+            <div class="slider-container">
+              <input type="range" id="slide-altitude" step="50" min="100" max="2000" value="550">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-velocity_magnitude">Velocity <span class="unit">(km/s)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-velocity_magnitude" step="0.01" min="1" max="12" value="7.58">
+            </div>
+            <div class="slider-container">
+              <input type="range" id="slide-velocity_magnitude" step="0.05" min="1" max="11" value="7.58">
+            </div>
+          </div>
+
+          <!-- Hidden/Derived/Secondary Variables -->
+          <div class="input-group">
+            <label for="input-semi_major_axis">Semi-Major Axis <span class="unit">(km)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-semi_major_axis" value="6921" readonly>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-distance_from_center">Distance from Earth center <span class="unit">(km)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-distance_from_center" value="6921">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-perigee">Perigee Radius <span class="unit">(km)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-perigee" value="6920">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-apogee">Apogee Radius <span class="unit">(km)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-apogee" value="6922">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-orbital_period">Orbital Period <span class="unit">(seconds)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-orbital_period" value="5737">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-specific_orbital_energy">Specific Energy <span class="unit">(MJ/kg)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-specific_orbital_energy" step="0.01" value="-28.8">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-mean_motion">Mean Motion <span class="unit">(revs/day)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-mean_motion" step="0.0001" value="15.06">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-raan">RAAN <span class="unit">(degrees)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-raan" step="0.1" min="0" max="360" value="142.5">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-arg_perigee">Argument of Perigee <span class="unit">(degrees)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-arg_perigee" step="0.1" min="0" max="360" value="89.2">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="input-mean_anomaly">Mean Anomaly <span class="unit">(degrees)</span></label>
+            <div class="input-wrapper">
+              <input type="number" id="input-mean_anomaly" step="0.1" min="0" max="360" value="271.4">
+            </div>
+          </div>
+
+          <!-- ANALYZE BUTTON -->
+          <button class="btn-predict" id="btn-analyze">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Analyze Object Orbit
+          </button>
+        </div>
+      </section>
+
+      <!-- RIGHT: ANALYSIS HUB & CLASSIFIER RESULT -->
+      <div class="dashboard-side">
+        <section class="card result-screen" id="result-panel">
+          <div class="result-placeholder" id="result-placeholder">
+            <div class="hud-graphic">
+              <div class="hud-sweep"></div>
+            </div>
+            <p>Click "Analyze Object Orbit" to process classification metrics</p>
+          </div>
+
+          <div class="result-data" id="result-data" style="display: none; flex-direction: column; align-items: center;">
+            <div class="result-header">Telemetry Target Scan</div>
+            <div class="hud-graphic">
+              <div class="hud-sweep"></div>
+              <div class="hud-blip"></div>
+            </div>
+            <div class="result-status" id="status-txt">Evaluating...</div>
+            <div class="result-confidence" id="confidence-txt">Classification Confidence: <span>--</span></div>
+            <div class="result-explanation" id="explanation-txt"></div>
+          </div>
+        </section>
+      </div>
+
+    </div> <!-- END GRID -->
+
+    <!-- BOTTOM SECTION: PHYSICAL COMPARISON TABLE -->
+    <section class="card" style="margin-top: 2rem;">
+      <h2>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="9" y1="18" x2="15" y2="18"/>
+          <line x1="10" y1="14" x2="14" y2="14"/>
+          <line x1="11" y1="10" x2="13" y2="10"/>
+          <line x1="12" y1="2" x2="12" y2="6"/>
+        </svg>
+        Aerospace Classification Rules (Active vs Debris)
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 1.5rem;">
+        These rules reflect the key physical differences detected by the Decision Tree and Random Forest models trained on the TLE database.
+      </p>
+
+      <div class="comparison-table-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature Parameter</th>
+              <th>Active Satellites (Label 0)</th>
+              <th>Space Debris (Label 1)</th>
+              <th>Aerospace Mechanics Justification</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Eccentricity (e)</strong></td>
+              <td>Near-Circular (e &lt; 0.001)</td>
+              <td>Highly Elliptical (e &gt; 0.01)</td>
+              <td>Active payloads are circularized for stability; collision/explosion shock waves eject debris in elliptical paths.</td>
+            </tr>
+            <tr>
+              <td><strong>Inclination (i)</strong></td>
+              <td>Sun-Synchronous (~98°), GEO (~0°)</td>
+              <td>Clustered around collision angles (e.g. 74°, 82.6°)</td>
+              <td>Active payloads occupy uniform orbits; debris remains in the exact plane of its parent object's breakup.</td>
+            </tr>
+            <tr>
+              <td><strong>Altitude (Alt)</strong></td>
+              <td>Maintained at specific heights</td>
+              <td>Decaying height, drifting over time</td>
+              <td>Active payloads use station-keeping thrusters; debris decays continuously due to atmospheric drag.</td>
+            </tr>
+            <tr>
+              <td><strong>Specific Orbital Energy</strong></td>
+              <td>Constant, controlled energy</td>
+              <td>Decaying, lower energy levels</td>
+              <td>Debris has no thrusters and constantly loses potential and kinetic energy to atmospheric friction.</td>
+            </tr>
+            <tr>
+              <td><strong>Velocity (V)</strong></td>
+              <td>Constant speed (approx. 7.58 km/s in LEO)</td>
+              <td>Varying speed (highest at perigee, lowest at apogee)</td>
+              <td>Elliptical debris orbits exchange kinetic and potential energy continually along their paths.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>Developed for Space Debris Detection Project | Codebase deployed on <a href="https://github.com/" target="_blank">GitHub</a></p>
+    </footer>
+
+  </div> <!-- END CONTAINER -->
+
+  <script src="app.js"></script>
+</body>
+</html>

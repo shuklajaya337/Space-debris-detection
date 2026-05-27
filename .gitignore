@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+
+# Ignore secondary folder
+Space-Debris-main/
+
+# Ignore Word docs and other temporary files in git
+*.docx
+*.jpeg
+*.pyc
+
+# Ignore large binary models
+*.pkl
+outputs/*.pkl
