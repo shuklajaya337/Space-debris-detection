@@ -1,7 +1,6 @@
 # 🛰️ Space Debris Detection & Temporal Validation
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/Live_Demo-GitHub_Pages-brightgreen.svg)](https://shuklajaya337.github.io/Space-debris-detection/)
 [![Sector](https://img.shields.io/badge/Domain-Space_Situational_Awareness-blueviolet.svg)](#)
 
@@ -109,7 +108,4 @@ To run the pipeline and check the code execution, run these commands inside the 
    ```
    *Starts a local server and automatically opens `http://localhost:8000` in your web browser.*
 
----
 
-## 📄 License
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
