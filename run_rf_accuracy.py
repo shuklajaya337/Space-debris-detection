@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from sgp4.api import Satrec, jday
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 
 # Constants
 EARTH_RADIUS = 6371.0        # km
@@ -151,11 +151,14 @@ if __name__ == "__main__":
     )
     rf.fit(X_train, y_train)
     rf_pred = rf.predict(X_test)
+    rf_probs = rf.predict_proba(X_test)[:, 1]
     rf_acc  = accuracy_score(y_test, rf_pred)
     rf_oob  = rf.oob_score_
+    rf_auc  = roc_auc_score(y_test, rf_probs)
 
     print(f"  Test Accuracy : {rf_acc:.6f}  ({rf_acc * 100:.4f}%)")
     print(f"  OOB Score     : {rf_oob:.6f}  ({rf_oob * 100:.4f}%)")
+    print(f"  ROC-AUC Score : {rf_auc:.6f}  ({rf_auc * 100:.4f}%)")
     print()
     print(classification_report(y_test, rf_pred, target_names=["Active Satellite", "Debris"]))
 
@@ -170,9 +173,12 @@ if __name__ == "__main__":
     )
     gb.fit(X_train, y_train)
     gb_pred = gb.predict(X_test)
+    gb_probs = gb.predict_proba(X_test)[:, 1]
     gb_acc  = accuracy_score(y_test, gb_pred)
+    gb_auc  = roc_auc_score(y_test, gb_probs)
 
     print(f"  Test Accuracy : {gb_acc:.6f}  ({gb_acc * 100:.4f}%)")
+    print(f"  ROC-AUC Score : {gb_auc:.6f}  ({gb_auc * 100:.4f}%)")
     print()
     print(classification_report(y_test, gb_pred, target_names=["Active Satellite", "Debris"]))
 
@@ -180,10 +186,10 @@ if __name__ == "__main__":
     print("=" * 60)
     print("  MODEL COMPARISON — 2024 DATASET")
     print("=" * 60)
-    print(f"  {'Model':<30}  {'Accuracy':>10}  {'OOB':>10}")
-    print("  " + "-" * 55)
-    print(f"  {'Random Forest (200 trees)':<30}  {rf_acc * 100:>9.4f}%  {rf_oob * 100:>9.4f}%")
-    print(f"  {'Gradient Boosting (200 est.)':<30}  {gb_acc * 100:>9.4f}%  {'N/A':>10}")
+    print(f"  {'Model':<30}  {'Accuracy':>10}  {'OOB':>10}  {'ROC-AUC':>10}")
+    print("  " + "-" * 67)
+    print(f"  {'Random Forest (200 trees)':<30}  {rf_acc * 100:>9.4f}%  {rf_oob * 100:>9.4f}%  {rf_auc * 100:>9.4f}%")
+    print(f"  {'Gradient Boosting (200 est.)':<30}  {gb_acc * 100:>9.4f}%  {'N/A':>10}  {gb_auc * 100:>9.4f}%")
     print("=" * 60)
 
     winner = "Random Forest" if rf_acc >= gb_acc else "Gradient Boosting"

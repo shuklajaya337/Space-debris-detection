@@ -1,7 +1,6 @@
 # 🛰️ Space Debris Detection & Temporal Validation
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/Live_Demo-GitHub_Pages-brightgreen.svg)](https://shuklajaya337.github.io/Space-debris-detection/)
 [![Sector](https://img.shields.io/badge/Domain-Space_Situational_Awareness-blueviolet.svg)](#)
 
@@ -31,6 +30,7 @@ space-debris-detection/
 ├── outputs/                    ← Directory containing generated plots & trained models
 │   ├── 3d_orbit_visualization.png
 │   ├── model_comparison.png
+│   ├── cross_year_roc_curve.png  ← ROC-AUC Curve comparison plot
 │   └── ...
 │
 ├── Space_Debris_Complete.ipynb ← Primary Jupyter Notebook with the complete pipeline
@@ -41,7 +41,7 @@ space-debris-detection/
 ├── count_objects.py            ← TLE record validation and class counting
 ├── run_rf_accuracy.py          ← Standalone 2024 training and validation
 ├── cross_year_predict.py       ← 2024 -> 2026 temporal validation script
-├── generate_outputs.py         ← Script to regenerate all 12 plots & models
+├── generate_outputs.py         ← Script to regenerate all 13 plots & models
 ├── run_web_app.py              ← Simple local web server launcher
 └── verify_notebook.py          ← Notebook loadability verification utility
 ```
@@ -61,25 +61,26 @@ The SGP4-propagated coordinates are rendered in a 3D coordinate frame around a t
 ### 3. ML Modeling & Class Balancing
 * Models trained: **Random Forest** and **Gradient Boosting**.
 * Address class imbalance (80% satellites, 20% debris) using **SMOTE** (Synthetic Minority Over-sampling Technique) to ensure unbiased recall.
+* Evaluation metrics used: **Accuracy, Precision, Recall, F1-Score, Confusion Matrices, and ROC-AUC Curves**.
 
 ---
 
 ## 📈 Key Performance Metrics
 
-### Model Performance (Accuracy)
-| Model Classifier | 2024 Validation Accuracy | 2026 Temporal Validation Accuracy |
-| :--- | :---: | :---: |
-| **Random Forest** | `98.79%` | `99.11%` |
-| **Gradient Boosting** | `99.32%` | `99.44%` |
+### Model Performance (Accuracy & ROC-AUC)
+| Model Classifier | 2024 Val Accuracy | 2024 Val ROC-AUC | 2026 Temporal Accuracy | 2026 Temporal ROC-AUC |
+| :--- | :---: | :---: | :---: | :---: |
+| **Random Forest** | `98.79%` | `99.91%` | `99.11%` | `99.93%` |
+| **Gradient Boosting** | `99.35%` | `99.96%` | `99.52%` | `99.98%` |
 
 ### Per-Group 2026 Prediction Rates (% Classified as Debris)
 | Group Category | Ground Truth | Random Forest Debris% | Gradient Boosting Debris% |
 | :--- | :---: | :---: | :---: |
 | **Cosmos 1408** | Debris | `50.00%` (2/4 objects) | `100.00%` (4/4 objects) |
 | **Cosmos 2251** | Debris | `94.89%` | `100.00%` |
-| **FengYun 1C** | Debris | `98.95%` | `98.37%` |
-| **Iridium 33** | Debris | `83.33%` | `98.15%` |
-| **Active Satellites** | Active Sat | `0.58%` (False Alarms) | `0.44%` (False Alarms) |
+| **FengYun 1C** | Debris | `98.95%` | `98.53%` |
+| **Iridium 33** | Debris | `83.33%` | `99.07%` |
+| **Active Satellites** | Active Sat | `0.58%` (False Alarms) | `0.38%` (False Alarms) |
 
 ---
 
@@ -111,5 +112,3 @@ To run the pipeline and check the code execution, run these commands inside the 
 
 ---
 
-## 📄 License
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.

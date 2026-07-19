@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from sgp4.api import Satrec, jday
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score, roc_curve
 
 # Constants
 EARTH_RADIUS = 6371.0
@@ -191,13 +191,15 @@ if __name__ == "__main__":
     rf = RandomForestClassifier(n_estimators=200, max_depth=None, n_jobs=-1, random_state=42, oob_score=True)
     rf.fit(X_train, y_train)
     rf_val_acc = accuracy_score(y_val, rf.predict(X_val))
-    print(f"    2024 validation accuracy : {rf_val_acc * 100:.4f}%  |  OOB: {rf.oob_score_ * 100:.4f}%")
+    rf_val_auc = roc_auc_score(y_val, rf.predict_proba(X_val)[:, 1])
+    print(f"    2024 validation accuracy : {rf_val_acc * 100:.4f}%  |  OOB: {rf.oob_score_ * 100:.4f}%  |  AUC: {rf_val_auc * 100:.4f}%")
 
     print("  Training Gradient Boosting (200 estimators)...")
     gb = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1, max_depth=5, random_state=42)
     gb.fit(X_train, y_train)
     gb_val_acc = accuracy_score(y_val, gb.predict(X_val))
-    print(f"    2024 validation accuracy : {gb_val_acc * 100:.4f}%")
+    gb_val_auc = roc_auc_score(y_val, gb.predict_proba(X_val)[:, 1])
+    print(f"    2024 validation accuracy : {gb_val_acc * 100:.4f}%  |  AUC: {gb_val_auc * 100:.4f}%")
 
     # Save trained models
     joblib.dump(rf, "outputs/rf_debris_classifier_2024.pkl")
@@ -214,12 +216,14 @@ if __name__ == "__main__":
 
     rf_pred_2026 = rf.predict(X_2026)
     rf_cross_acc = accuracy_score(y_2026, rf_pred_2026)
+    rf_cross_auc = roc_auc_score(y_2026, rf.predict_proba(X_2026)[:, 1])
 
     gb_pred_2026 = gb.predict(X_2026)
     gb_cross_acc = accuracy_score(y_2026, gb_pred_2026)
+    gb_cross_auc = roc_auc_score(y_2026, gb.predict_proba(X_2026)[:, 1])
 
-    print(f"\n  Random Forest   - 2026 Cross-Year Accuracy : {rf_cross_acc * 100:.4f}%")
-    print(f"  Gradient Boost  - 2026 Cross-Year Accuracy : {gb_cross_acc * 100:.4f}%")
+    print(f"\n  Random Forest   - 2026 Cross-Year Accuracy : {rf_cross_acc * 100:.4f}%  |  AUC: {rf_cross_auc * 100:.4f}%")
+    print(f"  Gradient Boost  - 2026 Cross-Year Accuracy : {gb_cross_acc * 100:.4f}%  |  AUC: {gb_cross_auc * 100:.4f}%")
 
     # STEP 5: PER-GROUP ANALYSIS
     print("\n" + "=" * 65)
@@ -279,6 +283,22 @@ if __name__ == "__main__":
     ax.legend()
     plt.tight_layout()
     plt.savefig("outputs/cross_year_per_group.png", dpi=150, bbox_inches="tight")
+    plt.close()
+
+    # Plot 3: ROC Curve
+    rf_fpr, rf_tpr, _ = roc_curve(y_2026, rf.predict_proba(X_2026)[:, 1])
+    gb_fpr, gb_tpr, _ = roc_curve(y_2026, gb.predict_proba(X_2026)[:, 1])
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(rf_fpr, rf_tpr, label=f"Random Forest (AUC = {rf_cross_auc:.4f})", color="#1E88E5", lw=2)
+    ax.plot(gb_fpr, gb_tpr, label=f"Gradient Boosting (AUC = {gb_cross_auc:.4f})", color="#43A047", lw=2)
+    ax.plot([0, 1], [0, 1], 'k--', alpha=0.5)
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
+    ax.set_title("ROC Curve - 2026 Cross-Year Prediction", fontweight="bold")
+    ax.legend(loc="lower right")
+    plt.tight_layout()
+    plt.savefig("outputs/cross_year_roc_curve.png", dpi=150, bbox_inches="tight")
     plt.close()
 
     print("  Cross-year plots saved in outputs/")

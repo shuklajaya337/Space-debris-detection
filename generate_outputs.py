@@ -40,7 +40,7 @@ from sgp4.api import Satrec, jday
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
-    accuracy_score, classification_report, confusion_matrix
+    accuracy_score, classification_report, confusion_matrix, roc_auc_score, roc_curve
 )
 from imblearn.over_sampling import SMOTE
 from mpl_toolkits.mplot3d import Axes3D   # noqa: F401
@@ -430,9 +430,11 @@ if __name__ == "__main__":
     y_2026  = df_2026["label"].values
 
     rf_cross = accuracy_score(y_2026, rf.predict(X_2026))
+    rf_cross_auc = roc_auc_score(y_2026, rf.predict_proba(X_2026)[:, 1])
     gb_cross = accuracy_score(y_2026, gb.predict(X_2026))
-    print(f"\n  Cross-Year Accuracy — RF : {rf_cross * 100:.4f}%")
-    print(f"  Cross-Year Accuracy — GB : {gb_cross * 100:.4f}%")
+    gb_cross_auc = roc_auc_score(y_2026, gb.predict_proba(X_2026)[:, 1])
+    print(f"\n  Cross-Year Accuracy — RF : {rf_cross * 100:.4f}%  |  AUC : {rf_cross_auc * 100:.4f}%")
+    print(f"  Cross-Year Accuracy — GB : {gb_cross * 100:.4f}%  |  AUC : {gb_cross_auc * 100:.4f}%")
 
     # Cross-Year Accuracy Bar Chart
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -504,6 +506,24 @@ if __name__ == "__main__":
     plt.savefig("outputs/cross_year_per_group.png", dpi=150, bbox_inches="tight")
     plt.close()
     print("  Saved: outputs/cross_year_per_group.png")
+
+    # ROC Curve Plot
+    print("\nGenerating ROC curve comparison plot ...")
+    rf_fpr, rf_tpr, _ = roc_curve(y_2026, rf.predict_proba(X_2026)[:, 1])
+    gb_fpr, gb_tpr, _ = roc_curve(y_2026, gb.predict_proba(X_2026)[:, 1])
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(rf_fpr, rf_tpr, label=f"Random Forest (AUC = {rf_cross_auc:.4f})", color="#1E88E5", lw=2)
+    ax.plot(gb_fpr, gb_tpr, label=f"Gradient Boosting (AUC = {gb_cross_auc:.4f})", color="#43A047", lw=2)
+    ax.plot([0, 1], [0, 1], "k--", alpha=0.5)
+    ax.set_xlabel("False Positive Rate", fontsize=12)
+    ax.set_ylabel("True Positive Rate", fontsize=12)
+    ax.set_title("ROC Curve - 2026 Cross-Year Prediction", fontsize=13, fontweight="bold")
+    ax.legend(loc="lower right", fontsize=10)
+    plt.tight_layout()
+    plt.savefig("outputs/cross_year_roc_curve.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print("  Saved: outputs/cross_year_roc_curve.png")
 
     # FINAL SUMMARY
     print("\n" + "=" * 55)

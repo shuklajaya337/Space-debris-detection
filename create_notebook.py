@@ -73,7 +73,7 @@ from datetime import datetime, timezone
 from sgp4.api import Satrec, jday
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score, roc_curve
 from imblearn.over_sampling import SMOTE
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -328,7 +328,9 @@ rf.fit(X_train, y_train)
 
 rf_pred = rf.predict(X_test)
 rf_acc = accuracy_score(y_test, rf_pred)
+rf_auc = roc_auc_score(y_test, rf.predict_proba(X_test)[:, 1])
 print(f"Random Forest validation accuracy: {rf_acc*100:.4f}%")
+print(f"Random Forest validation ROC-AUC : {rf_auc*100:.4f}%")
 print(f"Out-of-Bag (OOB) Score           : {rf.oob_score_*100:.4f}%")
 print("\n=== Classification Report ===")
 print(classification_report(y_test, rf_pred, target_names=["Active Satellite", "Debris"]))"""))
@@ -348,7 +350,9 @@ rf_smote.fit(X_train_sm, y_train_sm)
 
 rf_sm_pred = rf_smote.predict(X_test)
 rf_sm_acc = accuracy_score(y_test, rf_sm_pred)
+rf_sm_auc = roc_auc_score(y_test, rf_smote.predict_proba(X_test)[:, 1])
 print(f"RF (SMOTE Balanced) validation accuracy: {rf_sm_acc*100:.4f}%")
+print(f"RF (SMOTE Balanced) validation ROC-AUC : {rf_sm_auc*100:.4f}%")
 print(f"Balanced OOB Score                      : {rf_smote.oob_score_*100:.4f}%")"""))
 
 # ==============================================================================
@@ -361,7 +365,9 @@ gb.fit(X_train, y_train)
 
 gb_pred = gb.predict(X_test)
 gb_acc = accuracy_score(y_test, gb_pred)
+gb_auc = roc_auc_score(y_test, gb.predict_proba(X_test)[:, 1])
 print(f"Gradient Boosting validation accuracy: {gb_acc*100:.4f}%")
+print(f"Gradient Boosting validation ROC-AUC : {gb_auc*100:.4f}%")
 print("\n=== Classification Report ===")
 print(classification_report(y_test, gb_pred, target_names=["Active Satellite", "Debris"]))"""))
 
@@ -415,12 +421,14 @@ y_2026 = df_2026['label'].values
 
 rf_pred_26 = rf.predict(X_2026)
 rf_cross_acc = accuracy_score(y_2026, rf_pred_26)
+rf_cross_auc = roc_auc_score(y_2026, rf.predict_proba(X_2026)[:, 1])
 
 gb_pred_26 = gb.predict(X_2026)
 gb_cross_acc = accuracy_score(y_2026, gb_pred_26)
+gb_cross_auc = roc_auc_score(y_2026, gb.predict_proba(X_2026)[:, 1])
 
-print(f"Random Forest 2026 Cross-Year Accuracy       : {rf_cross_acc*100:.4f}%")
-print(f"Gradient Boosting 2026 Cross-Year Accuracy   : {gb_cross_acc*100:.4f}%")
+print(f"Random Forest 2026 Cross-Year Accuracy       : {rf_cross_acc*100:.4f}% | AUC: {rf_cross_auc*100:.4f}%")
+print(f"Gradient Boosting 2026 Cross-Year Accuracy   : {gb_cross_acc*100:.4f}% | AUC: {gb_cross_auc*100:.4f}%")
 
 print("\n=== Random Forest Classification Report on 2026 ===")
 print(classification_report(y_2026, rf_pred_26, target_names=["Active Satellite", "Debris"]))
@@ -488,6 +496,21 @@ for bar in list(b1) + list(b2):
     ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
             f"{bar.get_height():.1f}%", ha='center', va='bottom', fontsize=8)
 plt.tight_layout()
+plt.show()
+
+# Plot 3: ROC Curve Comparison
+rf_fpr, rf_tpr, _ = roc_curve(y_2026, rf.predict_proba(X_2026)[:, 1])
+gb_fpr, gb_tpr, _ = roc_curve(y_2026, gb.predict_proba(X_2026)[:, 1])
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(rf_fpr, rf_tpr, label=f"Random Forest (AUC = {rf_cross_auc:.4f})", color="#1E88E5", lw=2)
+ax.plot(gb_fpr, gb_tpr, label=f"Gradient Boosting (AUC = {gb_cross_auc:.4f})", color="#43A047", lw=2)
+ax.plot([0, 1], [0, 1], 'k--', alpha=0.5)
+ax.set_xlabel("False Positive Rate")
+ax.set_ylabel("True Positive Rate")
+ax.set_title("ROC Curve - 2026 Cross-Year Prediction", fontweight="bold")
+ax.legend(loc="lower right")
+plt.tight_layout()
 plt.show()"""))
 
 # ==============================================================================
@@ -507,10 +530,10 @@ print("  - outputs/gb_model_complete.pkl")
 print("\n=== FINAL EXECUTIVE SUMMARY ===")
 print(f"2024 Dataset Size      : {len(df_2024)} objects")
 print(f"2026 Dataset Size      : {len(df_2026)} objects")
-print(f"RF 2024 Val Accuracy   : {rf_acc*100:.3f}%")
-print(f"GB 2024 Val Accuracy   : {gb_acc*100:.3f}%")
-print(f"RF 2026 Cross Accuracy : {rf_cross_acc*100:.3f}%")
-print(f"GB 2026 Cross Accuracy : {gb_cross_acc*100:.3f}%")"""))
+print(f"RF 2024 Val Accuracy   : {rf_acc*100:.3f}%  |  AUC: {rf_auc*100:.3f}%")
+print(f"GB 2024 Val Accuracy   : {gb_acc*100:.3f}%  |  AUC: {gb_auc*100:.3f}%")
+print(f"RF 2026 Cross Accuracy : {rf_cross_acc*100:.3f}%  |  AUC: {rf_cross_auc*100:.3f}%")
+print(f"GB 2026 Cross Accuracy : {gb_cross_acc*100:.3f}%  |  AUC: {gb_cross_auc*100:.3f}%")"""))
 
 # Construct notebook JSON
 notebook = {
