@@ -110,5 +110,4 @@ To run the pipeline and check the code execution, run these commands inside the 
    ```
    *Starts a local server and automatically opens `http://localhost:8000` in your web browser.*
 
----
 
